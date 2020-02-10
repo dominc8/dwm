@@ -1,3 +1,12 @@
+Added features:
+- Alpha patch                   unsigned int baralpha in config.h to determine bar transparency
+
+For alpha patch to work the xcompmgr or sth similar needs to be running in the background.
+
+
+Original README:
+
+
 dwm - dynamic window manager
 ============================
 dwm is an extremely fast, small, and dynamic window manager for X.
