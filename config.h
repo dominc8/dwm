@@ -55,6 +55,7 @@ static const Layout layouts[] = {
 
 /* key definitions */
 #define MODKEY Mod1Mask
+#define Super_L_Mask Mod4Mask
 #define TAGKEYS(KEY,TAG) \
     { MODKEY,                       KEY,      view,           {.ui = 1 << TAG} }, \
     { MODKEY|ControlMask,           KEY,      toggleview,     {.ui = 1 << TAG} }, \
@@ -69,10 +70,11 @@ static char dmenumon[2] = "0"; /* component of dmenucmd, manipulated in spawn() 
 static const char *dmenucmd[] = { "dmenu_run", "-m", dmenumon, "-fn", dmenufont, "-nb", col_gray1, "-nf", col_gray3, "-sb", col_cyan, "-sf", col_gray4, NULL };
 static const char *termcmd[]  = { "st", NULL };
 static const char *turnoffcmd[]  = { "turnoff", NULL };
+static const char *lockscreencmd[]  = { "slock", NULL };
 
 static Key keys[] = {
     /* modifier             key                 function        argument */
-    { 0,                    XK_Super_L,         spawn,          { .v = dmenucmd } },
+    { MODKEY,               XK_p,               spawn,          { .v = dmenucmd } },
     { MODKEY|ShiftMask,     XK_Return,          spawn,          { .v = termcmd  } },
     { MODKEY,               XK_b,               togglebar,      { 0 } },
     { MODKEY,               XK_j,               focusstack,     { .i = +1 } },
@@ -97,6 +99,7 @@ static Key keys[] = {
     { MODKEY|ShiftMask,     XK_comma,           tagmon,         { .i = -1 } },
     { MODKEY|ShiftMask,     XK_period,          tagmon,         { .i = +1 } },
     { 0,                    XF86XK_PowerOff,    spawn,          { .v = turnoffcmd } },
+    { Super_L_Mask,         XK_l,               spawn,          { .v = lockscreencmd } },
     TAGKEYS(                XK_1,                      0)
     TAGKEYS(                XK_2,                      1)
     TAGKEYS(                XK_3,                      2)
