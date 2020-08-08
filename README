@@ -2,6 +2,7 @@ Added features:
 - Alpha patch                   unsigned int baralpha in config.h to determine bar transparency
 - Fibonacci patch
 - Handling the poweroff key
+- Swallowing terminal
 
 For alpha patch to work the xcompmgr or sth similar needs to be running in the background.
 
