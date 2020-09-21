@@ -38,6 +38,7 @@ static const Rule rules[] = {
     { "Brave",   NULL,     NULL,           1 << 8,    0,          0,           0,        -1 },
     { "st-256color",NULL,  NULL,           0,         0,          1,           0,        -1 },
     { NULL,      NULL,     "Event Tester", 0,         0,          0,           1,        -1 }, /* xev */
+    { "safeeyes",NULL,     NULL,           0,         0,          0,           1,        -1 },
 };
 
 /* layout(s) */
