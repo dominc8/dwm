@@ -3,7 +3,7 @@ Added features:
 - Fibonacci patch
 - Handling the poweroff key
 - Rotate stack patch
-- Gaps patch
+- Full gaps patch
 
 For alpha patch to work the xcompmgr or sth similar needs to be running in the background.
 
