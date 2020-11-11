@@ -122,7 +122,7 @@ struct Monitor {
 	int by;               /* bar geometry */
 	int mx, my, mw, mh;   /* screen size */
 	int wx, wy, ww, wh;   /* window area  */
-    int gappx;            /* gaps between windows */
+	int gappx;            /* gaps between windows */
 	unsigned int seltags;
 	unsigned int sellt;
 	unsigned int tagset[2];
@@ -243,6 +243,8 @@ static int xerrordummy(Display *dpy, XErrorEvent *ee);
 static int xerrorstart(Display *dpy, XErrorEvent *ee);
 static void xinitvisual();
 static void zoom(const Arg *arg);
+
+static void sigusr1_handler(int sig, siginfo_t *si, void *ucontext);
 
 /* variables */
 static const char broken[] = "broken";
@@ -653,7 +655,7 @@ createmon(void)
 	m->nmaster = nmaster;
 	m->showbar = showbar;
 	m->topbar = topbar;
-    m->gappx = gappx;
+	m->gappx = gappx;
 	m->lt[0] = &layouts[0];
 	m->lt[1] = &layouts[1 % LENGTH(layouts)];
 	strncpy(m->ltsymbol, layouts[0].symbol, sizeof m->ltsymbol);
@@ -1617,6 +1619,14 @@ setup(void)
 	/* clean up any zombies immediately */
 	sigchld(0);
 
+	struct sigaction sa;
+	sigemptyset(&sa.sa_mask);
+	sa.sa_sigaction = sigusr1_handler;
+	sa.sa_flags = SA_SIGINFO;
+
+	sigaction(SIGUSR1, &sa, NULL);
+
+
 	/* init screen */
 	screen = DefaultScreen(dpy);
 	sw = DisplayWidth(dpy, screen);
@@ -2270,3 +2280,30 @@ main(int argc, char *argv[])
 	XCloseDisplay(dpy);
 	return EXIT_SUCCESS;
 }
+
+
+static void
+sigusr1_handler(int sig, siginfo_t *si, void *ucontext)
+{
+	const char *clonecmd[]  = { "st", "-d", NULL, NULL };
+	char buf[PATH_MAX] = { 0 };
+	int st_pid = si->si_value.sival_int;
+
+	char proc_buf[30] = { 0 };
+
+	snprintf(&proc_buf[0], sizeof(proc_buf), "/proc/%d/cwd", st_pid);
+
+	ssize_t r = readlink(&proc_buf[0], buf, sizeof(buf));
+
+	if (r < 0) {
+	    perror("readlink /proc/self/cwd failed");
+	} else {
+	    buf[PATH_MAX-1] = '\0';
+	    Arg arg;
+	    arg.v = clonecmd;
+	    clonecmd[2] = &buf[0];
+	    spawn(&arg);
+	}
+
+}
+
