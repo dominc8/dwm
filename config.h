@@ -35,7 +35,7 @@ static const Rule rules[] = {
      *    WM_NAME(STRING) = title
      */
     /* class            instance    title           tags mask   isfloating  monitor */
-    { "Brave",          NULL,       NULL,           1 << 8,     0,          -1 },
+    { "firefox",        NULL,       NULL,           1 << 8,     0,          -1 },
     { "st-256color",    NULL,       NULL,           0,          0,          -1 },
     { NULL,             NULL,       "Event Tester", 0,          0,          -1 }, /* xev */
     { "safeeyes",       NULL,       NULL,           0,          1,          -1 },
@@ -75,6 +75,8 @@ static const char *dmenucmd[] = { "dmenu_run", "-m", dmenumon, "-fn", dmenufont,
 static const char *termcmd[]  = { "st", NULL };
 static const char *turnoffcmd[]  = { "turnoff", NULL };
 static const char *lockscreencmd[]  = { "slock", NULL };
+static const char *printscreensavecmd[]  = { "gscreenshot", "-f", "/home/dominik/Pictures/Screenshots/", "-c", NULL };
+static const char *printscreenselectcmd[]  = { "gscreenshot", "-f", "/home/dominik/Pictures/Screenshots/", "-c", "-s", NULL };
 
 static Key keys[] = {
     /* modifier             key                 function        argument */
@@ -109,6 +111,8 @@ static Key keys[] = {
     { MODKEY,               XK_minus,           setgaps,        {.i = -1 } },
     { MODKEY,               XK_equal,           setgaps,        {.i = +1 } },
     { MODKEY|ShiftMask,     XK_equal,           setgaps,        {.i = 0  } },
+    { 0,                    XK_Print,           spawn,          {.v = printscreensavecmd  } },
+    { ShiftMask,            XK_Print,           spawn,          {.v = printscreenselectcmd  } },
     TAGKEYS(                XK_1,                      0)
     TAGKEYS(                XK_2,                      1)
     TAGKEYS(                XK_3,                      2)
