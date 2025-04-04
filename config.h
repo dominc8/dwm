@@ -35,6 +35,8 @@ static const Rule rules[] = {
      *    WM_NAME(STRING) = title
      */
     /* class            instance    title           tags mask   isfloating  monitor */
+    { "thunderbird",    NULL,       NULL,           1 << 7,     0,          -1 },
+    { "Brave-browser",  NULL,       NULL,           1 << 8,     0,          -1 },
     { "firefox",        NULL,       NULL,           1 << 8,     0,          -1 },
     { "st-256color",    NULL,       NULL,           0,          0,          -1 },
     { NULL,             NULL,       "Event Tester", 0,          0,          -1 }, /* xev */
