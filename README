@@ -6,6 +6,7 @@ Added features:
 - Full gaps patch
 - Before naming client window as 'broken' when WM_NAME is empty try using WM_CLASS first
 - Cooperate with st (using signals) and handle spawning st with current shell pwd as working dir
+- xrdb patch
 
 For alpha patch to work the xcompmgr or sth similar needs to be running in the background.
 
