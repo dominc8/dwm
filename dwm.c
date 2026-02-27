@@ -523,7 +523,7 @@ cleanup(void)
     for (i = 0; i < CurLast; i++)
         drw_cur_free(drw, cursor[i]);
     for (i = 0; i < LENGTH(colors); i++)
-        free(scheme[i]);
+        drw_scm_free(drw, scheme[i], 3);
     free(scheme);
     XDestroyWindow(dpy, wmcheckwin);
     drw_free(drw);
@@ -924,17 +924,18 @@ focusstack(const Arg *arg)
 Atom
 getatomprop(Client *c, Atom prop)
 {
-    int di;
-    unsigned long dl;
-    unsigned char *p = NULL;
-    Atom da, atom = None;
+	int format;
+	unsigned long nitems, dl;
+	unsigned char *p = NULL;
+	Atom da, atom = None;
 
-    if (XGetWindowProperty(dpy, c->win, prop, 0L, sizeof atom, False, XA_ATOM,
-        &da, &di, &dl, &dl, &p) == Success && p) {
-        atom = *(Atom *)p;
-        XFree(p);
-    }
-    return atom;
+	if (XGetWindowProperty(dpy, c->win, prop, 0L, sizeof atom, False, XA_ATOM,
+		&da, &format, &nitems, &dl, &p) == Success && p) {
+		if (nitems > 0 && format == 32)
+			atom = *(long *)p;
+		XFree(p);
+	}
+	return atom;
 }
 
 int
@@ -956,13 +957,13 @@ getstate(Window w)
     unsigned long n, extra;
     Atom real;
 
-    if (XGetWindowProperty(dpy, w, wmatom[WMState], 0L, 2L, False, wmatom[WMState],
-        &real, &format, &n, &extra, (unsigned char **)&p) != Success)
-        return -1;
-    if (n != 0)
-        result = *p;
-    XFree(p);
-    return result;
+	if (XGetWindowProperty(dpy, w, wmatom[WMState], 0L, 2L, False, wmatom[WMState],
+		&real, &format, &n, &extra, &p) != Success)
+		return -1;
+	if (n != 0 && format == 32)
+		result = *(long *)p;
+	XFree(p);
+	return result;
 }
 
 int
@@ -1260,30 +1261,30 @@ movemouse(const Arg *arg)
     XEvent ev;
     Time lasttime = 0;
 
-    if (!(c = selmon->sel))
-        return;
-    if (c->isfullscreen) /* no support moving fullscreen windows by mouse */
-        return;
-    restack(selmon);
-    ocx = c->x;
-    ocy = c->y;
-    if (XGrabPointer(dpy, root, False, MOUSEMASK, GrabModeAsync, GrabModeAsync,
-        None, cursor[CurMove]->cursor, CurrentTime) != GrabSuccess)
-        return;
-    if (!getrootptr(&x, &y))
-        return;
-    do {
-        XMaskEvent(dpy, MOUSEMASK|ExposureMask|SubstructureRedirectMask, &ev);
-        switch(ev.type) {
-        case ConfigureRequest:
-        case Expose:
-        case MapRequest:
-            handler[ev.type](&ev);
-            break;
-        case MotionNotify:
-            if ((ev.xmotion.time - lasttime) <= (1000 / 60))
-                continue;
-            lasttime = ev.xmotion.time;
+	if (!(c = selmon->sel))
+		return;
+	if (c->isfullscreen) /* no support moving fullscreen windows by mouse */
+		return;
+	restack(selmon);
+	ocx = c->x;
+	ocy = c->y;
+	if (XGrabPointer(dpy, root, False, MOUSEMASK, GrabModeAsync, GrabModeAsync,
+		None, cursor[CurMove]->cursor, CurrentTime) != GrabSuccess)
+		return;
+	if (!getrootptr(&x, &y))
+		return;
+	do {
+		XMaskEvent(dpy, MOUSEMASK|ExposureMask|SubstructureRedirectMask, &ev);
+		switch(ev.type) {
+		case ConfigureRequest:
+		case Expose:
+		case MapRequest:
+			handler[ev.type](&ev);
+			break;
+		case MotionNotify:
+			if ((ev.xmotion.time - lasttime) <= (1000 / refreshrate))
+				continue;
+			lasttime = ev.xmotion.time;
 
             nx = ocx + (ev.xmotion.x - x);
             ny = ocy + (ev.xmotion.y - y);
@@ -1415,29 +1416,29 @@ resizemouse(const Arg *arg)
     XEvent ev;
     Time lasttime = 0;
 
-    if (!(c = selmon->sel))
-        return;
-    if (c->isfullscreen) /* no support resizing fullscreen windows by mouse */
-        return;
-    restack(selmon);
-    ocx = c->x;
-    ocy = c->y;
-    if (XGrabPointer(dpy, root, False, MOUSEMASK, GrabModeAsync, GrabModeAsync,
-        None, cursor[CurResize]->cursor, CurrentTime) != GrabSuccess)
-        return;
-    XWarpPointer(dpy, None, c->win, 0, 0, 0, 0, c->w + c->bw - 1, c->h + c->bw - 1);
-    do {
-        XMaskEvent(dpy, MOUSEMASK|ExposureMask|SubstructureRedirectMask, &ev);
-        switch(ev.type) {
-        case ConfigureRequest:
-        case Expose:
-        case MapRequest:
-            handler[ev.type](&ev);
-            break;
-        case MotionNotify:
-            if ((ev.xmotion.time - lasttime) <= (1000 / 60))
-                continue;
-            lasttime = ev.xmotion.time;
+	if (!(c = selmon->sel))
+		return;
+	if (c->isfullscreen) /* no support resizing fullscreen windows by mouse */
+		return;
+	restack(selmon);
+	ocx = c->x;
+	ocy = c->y;
+	if (XGrabPointer(dpy, root, False, MOUSEMASK, GrabModeAsync, GrabModeAsync,
+		None, cursor[CurResize]->cursor, CurrentTime) != GrabSuccess)
+		return;
+	XWarpPointer(dpy, None, c->win, 0, 0, 0, 0, c->w + c->bw - 1, c->h + c->bw - 1);
+	do {
+		XMaskEvent(dpy, MOUSEMASK|ExposureMask|SubstructureRedirectMask, &ev);
+		switch(ev.type) {
+		case ConfigureRequest:
+		case Expose:
+		case MapRequest:
+			handler[ev.type](&ev);
+			break;
+		case MotionNotify:
+			if ((ev.xmotion.time - lasttime) <= (1000 / refreshrate))
+				continue;
+			lasttime = ev.xmotion.time;
 
             nw = MAX(ev.xmotion.x - ocx - 2 * c->bw + 1, 1);
             nh = MAX(ev.xmotion.y - ocy - 2 * c->bw + 1, 1);
@@ -1611,13 +1612,11 @@ sendevent(Client *c, Atom proto)
 void
 setfocus(Client *c)
 {
-    if (!c->neverfocus) {
-        XSetInputFocus(dpy, c->win, RevertToPointerRoot, CurrentTime);
-        XChangeProperty(dpy, root, netatom[NetActiveWindow],
-            XA_WINDOW, 32, PropModeReplace,
-            (unsigned char *) &(c->win), 1);
-    }
-    sendevent(c, wmatom[WMTakeFocus]);
+	if (!c->neverfocus)
+		XSetInputFocus(dpy, c->win, RevertToPointerRoot, CurrentTime);
+	XChangeProperty(dpy, root, netatom[NetActiveWindow], XA_WINDOW, 32,
+		PropModeReplace, (unsigned char *)&c->win, 1);
+	sendevent(c, wmatom[WMTakeFocus]);
 }
 
 void
@@ -1701,7 +1700,7 @@ setup(void)
 	sa.sa_flags = SA_NOCLDSTOP | SA_NOCLDWAIT | SA_RESTART;
 	sa.sa_handler = SIG_IGN;
 	sigaction(SIGCHLD, &sa, NULL);
- 
+
 	/* clean up any zombies (inherited from .xinitrc etc) immediately */
 	while (waitpid(-1, NULL, WNOHANG) > 0);
 
@@ -2435,4 +2434,3 @@ sigusr1_handler(int sig, siginfo_t *si, void *ucontext)
     }
 
 }
-
